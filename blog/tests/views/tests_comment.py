@@ -74,15 +74,15 @@ class CommentViewTestCase(APITestCase):
         # Assert that the comment is deleted
         self.assertFalse(Comment.objects.filter(pk=self.comment.pk).exists())
 
-    def test_delete_comment_as_non_admin(self):
+    def test_delete_comment_as_comment_author(self):
         url = reverse('comment-detail', args=[self.comment.pk])
         self.client.force_authenticate(user=self.reader)
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        # Assert that the comment is not deleted
-        self.assertTrue(Comment.objects.filter(pk=self.comment.pk).exists())
+        # Assert that the comment is deleted
+        self.assertFalse(Comment.objects.filter(pk=self.comment.pk).exists())
 
 
 class CommentListViewTest(APITestCase):

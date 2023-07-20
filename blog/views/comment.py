@@ -5,7 +5,7 @@ from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
 from blog.models import Comment, Post
-from blog.permissions import IsAdmin
+from blog.permissions import IsPostOwnerOrAdmin
 from blog.serializers import CommentSerializer, InputParamSerializer
 from blog.utils import CommentCreationRateThrottle
 from mini_blog.errors import BadRequest
@@ -28,7 +28,7 @@ class CommentView(APIView):
         elif self.request.method == 'POST':
             return [permissions.IsAuthenticated()]
         elif self.request.method == 'DELETE':
-            return [permissions.IsAuthenticated(), IsAdmin()]
+            return [permissions.IsAuthenticated(), IsPostOwnerOrAdmin()]
         return []
 
     def get(self, request, comment_id):
@@ -91,7 +91,7 @@ class CommentView(APIView):
             Response: 204 after successful deletion
         """
         comment = get_object_or_404(Comment, comment_id=comment_id)
-        # self.check_object_permissions(request, comment)
+        self.check_object_permissions(request, comment)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

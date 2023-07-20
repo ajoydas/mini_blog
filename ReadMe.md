@@ -84,16 +84,19 @@ To note-
 - To make a user `Author` or `Admin`, the user with superuser account needs to change the role of the user. This can be
   done from the
   admin site `/admin` or via the API `/api/auth/profile/{username}` API here username is the username of the user whose
-  role needs to be changed.
+  role needs to be changed. The `role` property takes the following values to `Reader`, `Author`, or `Admin`.
 
-**Postman Collection**: I have added a collection of Postman requests that I used to test the APIs. The collection can
-be found at
-the `resources`
+**Postman Collection**: I have added a collection of Postman requests that I have used to test the APIs. The collection
+can be found at the `resources`
 directory. [Here](https://learning.postman.com/docs/getting-started/importing-and-exporting-data/#importing-data-into-postman)
-you will find the tutorial on importing the collection to Postman.
+you will find the tutorial on importing the collection to Postman. This collection automatically sets the auth tokens to
+every requests by utilizing variables and test scripts. These variables can be found under the root level `Variables`
+tab in
+the Postman collection and the `BLOG_URL` variable (default to `localhost:8000`) can be modified there if needed to set
+the correct url.
 
 **API design rationale:**
-APIs can designed in focusing on various concepts. While designing the APIs my focus was on keeping related APIs
+APIs can be designed in focusing on various concepts. While designing the APIs my focus was on keeping related APIs
 together. I have also considered how these APIs will be consumed (i.e., their sequences) by any frontend.
 For example, reactions won't be dealt without a post or comment. So, instead of having a separate API group for
 reactions, I have added them as nested APIs within posts and comments.
@@ -115,27 +118,27 @@ examples.
 
 ### Testing, Linting, and Code Coverage support
 
-Added a `run_commands.sh` script to run the tests, linting, and code coverage commands. This find can also aid in CI
-pipeline to automatically verifying any pull request. Used `flake8` for linting and `coverage` for code coverage.
-To run the script, run:
+Added a `run_commands.sh` script to run the tests, linting, and code coverage commands. This file can also aid in CI
+pipeline to automatically verify any pull requests. Used `flake8` for linting and `coverage` for code coverage.
+To use the script, run:
 
 ```bash
 ./run_commands.sh -h
 ./run_commands.sh --tests --lint --coverage
 ```
 
-After the coverage command is run, the coverage report can be found in `htmlcov` directory.
+After the coverage command is run, the coverage report can be found in `htmlcov` directory (open `index.html` file in a
+browser).
 
 Want to mention two special test files:
 
-- `blog/tests/test_rate_limiting.py`: This file contains the tests for rate limiting.
-- `blog/tests/test_sequence.py`: Similar to an integration test, contains sequence of API calls mentioned within the
-  sequence
-  diagram.
+- `blog/tests/test_rate_limiting.py`: This file contains a testcase that tests rate limiting.
+- `blog/tests/test_sequence.py`: Similar to an integration test, contains simulation of sequence of API calls mentioned
+  within the sequence diagram.
 
 ### Rate limiting
 
-Used rate limiting to the number of API calls. The defaults are as follows and can be tuned as needed in
+Used rate limiting to limit the number of API calls. The defaults are as follows and can be tuned as needed within
 the `settings.py`file:
 
 ```python
@@ -152,30 +155,31 @@ REST_FRAMEWORK = {
 ```
 
 Here, we are only allowing users to create 3 posts and 3 comments per minute as an example. Other APIs will be limited
-by the  `anon` (for non-logged in users) and `user`(for logged in users) rate limit.
+by the  `anon` (for non-logged in users) and `user`(for logged in users) rate limit scope.
 
 ### Docker support
 
 Added docker support to this project for both development and production environment. The development setup
-uses `sqlite3` as the database and the production setup uses `postgres` as the database, a multi-stage image build
+uses `sqlite3` as the database and the production setup uses `postgres` as the database as well as a multi-stage image
+build
 setup, and gunicorn as the WSGI server.
 
-To use the development setup, run:
+To run the project using docker first install `docker` and `docker-compose`. Then to use the development setup, run:
 
 ```bash
 # builds and runs the docker containers
-docker-compose -f docker-compose.dev.yml up
+docker-compose -f docker-compose.dev.yaml up
 # removes the docker containers
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose -f docker-compose.dev.yaml down -v
 ```
 
 To use the production setup, run:
 
 ```bash
 # builds and runs the docker containers
-docker-compose -f docker-compose.prod.yml up
+docker-compose -f docker-compose.prod.yaml up
 # removes the docker containers
-docker-compose -f docker-compose.prod.yml down -v
+docker-compose -f docker-compose.prod.yaml down -v
 ```
 
 For both of these the server can be accessed at `http://localhost:8000`. The postgres database can be accessed
@@ -184,15 +188,16 @@ via the `.env` file).
 
 ## Future work
 
-Due to time constraints and the scope of the project have not been able to apply all the best practices and add possible
-extensions. Some of the notable ones are listed below:
+Due to the constraints time and scope of the project, I have not been able to apply all the best practices and add all
+types of features as I hoped for. Some of the notable ones that can be explored in the future iterations are listed
+below:
 
-- Testing and Bug fixing: Addition testing such as more testcases can be added to explore hidden bugs. More unit,
+- Testing and Bug fixing: Additional testcases can be added to explore hidden bugs. More unit,
   integration, load, performance testing, etc. can be added.
-- Pagination: Pagination support can be added as number of posts and comments can be huge.
-- Advanced Python and Advanced Django: Though I considerd using advanced python and django features such generators,
+- Pagination: Pagination support can be added to support a large number of posts and comments.
+- Advanced Python and Advanced Django: Advanced python and django features such generators,
   list comphrehensions, Model Managers, `select_related`/`prefetch_related`,
-  etc. but have not been able to utilize them here due to the limitation of time and scope,
+  etc.
 - Caching: Data caching can be added. Would help to reduce the load on the database (specifically for the popular posts
   and comments).
 - Documentation: API documentation and code comments can be improved.
@@ -216,7 +221,9 @@ Have used various documentation and tutorials to build this project. Some of the
     - Customizing swagger schema: https://drf-yasg.readthedocs.io/en/stable/custom_spec.html
 - JWT Auth: https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html
 
+## Thank you
 
+---- for going through the project. Hope you liked it ----
 
 
 
