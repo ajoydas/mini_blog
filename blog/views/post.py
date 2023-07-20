@@ -1,49 +1,26 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
-from rest_framework.exceptions import PermissionDenied, NotAuthenticated
 from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
 from blog.models import Post
+from blog.permissions import IsAuthor, IsPostOwnerOrAdmin
 from blog.serializers import PostSerializer
-
-
-# class PostViewSet(viewsets.ModelViewSet):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
-#
-#     def get_permissions(self):
-#         if self.action in ['view']:
-#             return [permissions.AllowAny]
-#         if self.action in ['create']:
-#             return [permissions.IsAuthenticated()]
-#         elif self.action in ['update', 'partial_update', 'destroy']:
-#             post = self.get_object()
-#             if self.request.user == post.owner or self.request.user.profile.role == 'Admin':
-#                 return [permissions.IsAuthenticated()]
-#         return []
-
-class IsPostOwnerOrAdmin(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # print('checking is object permission', obj.owner == request.user, request.user.profile.role == 'Admin')
-        return obj.owner == request.user or request.user.profile.role == 'Admin'
-
-
-class IsAuthor(permissions.BasePermission):
-    def has_permission(self, request, view):
-        # print('checking is author: ', request.user.profile.role)
-        return request.user.profile.role == 'Author'
-
-
-# class IsAdmin(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.profile.role == 'Admin'
+from blog.utils import PostCreationRateThrottle
+from mini_blog.errors import BadRequest
 
 
 class PostView(APIView):
-    # permission_classes = [permissions.IsAuthenticated]
-    throttle_classes = [AnonRateThrottle, UserRateThrottle]
+    """
+    This class handles the creation, retrieval, update and deletion of posts.
+    """
+
+    def get_throttles(self):
+        if self.request.method == 'POST':
+            return [PostCreationRateThrottle()]
+        else:
+            return [AnonRateThrottle(), UserRateThrottle()]
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -54,16 +31,17 @@ class PostView(APIView):
             return [permissions.IsAuthenticated(), IsPostOwnerOrAdmin()]
         return []
 
-    def handle_exception(self, exc):
-        if isinstance(exc, PermissionDenied):
-            return Response({'error': 'Permission denied. You are not authorized to perform this action.'},
-                            status=status.HTTP_403_FORBIDDEN)
-        elif isinstance(exc, NotAuthenticated):
-            return Response({'error': 'Permission denied. You should be authenticated to perform this action.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        return super().handle_exception(exc)
-
     def get(self, request, post_id=None):
+        """
+        Post retrieval API.
+
+        This method specific post or post list.
+        Parameters:
+            request (Request): Request object
+            post_id (int): Post id
+        Returns:
+            Response: Specific Post or the list of all posts
+        """
         if post_id is not None:
             post = get_object_or_404(Post, post_id=post_id)
             serializer = PostSerializer(post)
@@ -74,27 +52,55 @@ class PostView(APIView):
             return Response(serializer.data)
 
     def post(self, request):
-        # title = request.data.get('title')
-        # body = request.data.get('body')
-        # self.check_permissions(request)
+        """
+        Post creation API.
+
+        This method creates a new post.
+        Parameters:
+            request (Request): Request object containing post data.
+        Returns:
+            Response: Newly created post
+        """
         data = request.data.copy()
         data['owner'] = request.user.id
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             post = serializer.save()
             return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        raise BadRequest(serializer.errors)
 
     def put(self, request, post_id):
+        """
+        Post update API.
+
+        This method updates an existing post.
+        Parameters:
+            request (Request): Request object containing post data.
+            post_id (int): Post id
+        Returns:
+            Response: Updated post
+        """
         post = get_object_or_404(Post, post_id=post_id)
-        serializer = PostSerializer(post, data=request.data)
+        data = request.data.copy()
+        data['owner'] = post.owner.id
+        serializer = PostSerializer(post, data=data)
         if serializer.is_valid():
             self.check_object_permissions(request, post)
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        raise BadRequest(serializer.errors)
 
     def delete(self, request, post_id):
+        """
+        Post deletion API.
+
+        This method deletes an existing post.
+        Parameters:
+            request (Request): Request object
+            post_id (int): Post id
+        Returns:
+            Response: 204 after successful deletion
+        """
         post = get_object_or_404(Post, post_id=post_id)
         self.check_object_permissions(request, post)
         post.delete()

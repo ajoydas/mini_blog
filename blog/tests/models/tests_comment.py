@@ -5,6 +5,10 @@ from blog.models import Post, Comment
 
 
 class CommentModelTestCase(TestCase):
+    """
+    This testcase tests the Comment model.
+    """
+
     def setUp(self):
         # Create test data
         self.user = User.objects.create(username='testuser')
@@ -21,7 +25,7 @@ class CommentModelTestCase(TestCase):
         child_comments = self.parent_comment.get_replies()
 
         # Assert that the child comments are correctly retrieved
-        self.assertEqual(child_comments.count(), 2)
+        self.assertEqual(len(child_comments), 2)
         self.assertIn(self.child_comment1, child_comments)
         self.assertIn(self.child_comment2, child_comments)
 
@@ -30,4 +34,4 @@ class CommentModelTestCase(TestCase):
         child_comments = self.orphan_comment.get_replies()
 
         # Assert that no child comments are retrieved
-        self.assertEqual(child_comments.count(), 0)
+        self.assertEqual(len(child_comments), 0)

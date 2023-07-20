@@ -146,10 +146,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '2/min',
-        'user': '5/min',
+        'anon': '20/minute',
+        'user': '50/minute',
+        'user_new_post_creation': '3/minute',
+        'user_new_comment_creation': '3/minute',
     },
-    # 'EXCEPTION_HANDLER': 'mini_blog.utils.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'mini_blog.utils.custom_exception_handler',
 }
 
 # SIMPLE_JWT configurations
@@ -159,8 +161,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Adjust the refresh token lifetime as desired
 }
 
-# settings.py
-
+# Logging configurations: added a pretty formatter for better readability
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -185,14 +186,13 @@ LOGGING = {
 # Code coverage settings
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-# Code coverage settings
-COVERAGE_MODULE_EXCLUDES = [
-    '*/tests/*',
-    'manage.py',
-    'settings.py',
-    'urls.py',
-    'asgi.py',
-    'wsgi.py',
-    '*/migrations/*',
-]
-COVERAGE_REPORT_HTML_OUTPUT_DIR = 'coverage'
+# Swagger API documentation generation settings
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        },
+    },
+}

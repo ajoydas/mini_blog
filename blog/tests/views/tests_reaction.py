@@ -7,6 +7,10 @@ from blog.models import Post, Comment, Reaction
 
 
 class ReactionViewTest(APITestCase):
+    """
+    This testcase tests the reaction APIs.
+    """
+
     def setUp(self):
         self.user = User.objects.create(username='test_user')
         self.post = Post.objects.create(owner=self.user, title='Test Post', body='Test Body')
@@ -52,9 +56,7 @@ class ReactionViewTest(APITestCase):
         self.client.force_login(self.user)
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected_data = {'like': 0, 'dislike': 0}
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_reaction_for_comment(self):
         reaction = Reaction.objects.create(comment=self.comment, user=self.user, reaction_type='dislike')
@@ -62,9 +64,7 @@ class ReactionViewTest(APITestCase):
         self.client.force_login(self.user)
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected_data = {'like': 0, 'dislike': 0}
-        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_nonexistent_reaction(self):
         url = reverse('comment-reaction-interact', args=[self.post.post_id, 'dislike'])

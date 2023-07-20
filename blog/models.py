@@ -3,9 +3,10 @@ from django.db import models
 from django.db.models import Count
 
 
-# TODO: check default value
-
 class Post(models.Model):
+    """
+    Model to represent a blog post.
+    """
     post_id = models.AutoField(primary_key=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
@@ -20,9 +21,15 @@ class Post(models.Model):
         return f'Owner: {self.owner.username}, Post: {self.title}'
 
     def get_comments(self):
-        return Comment.objects.filter(post=self, parent=None)
+        """
+        Returns comments on the post.
+        """
+        return list(Comment.objects.filter(post=self, parent=None))
 
     def get_reaction_count(self):
+        """
+        Returns the number of likes and dislikes on the post.
+        """
         reactions = (
             Reaction.objects
             .filter(post=self)
@@ -41,6 +48,9 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
+    """
+    Model to represent a comment on a blog post.
+    """
     comment_id = models.AutoField(primary_key=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
@@ -49,14 +59,16 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
 
-    # TODO
     def get_replies(self):
         """
            Returns a queryset of immediate child comments.
        """
-        return Comment.objects.filter(parent=self)
+        return list(Comment.objects.filter(parent=self))
 
     def get_reaction_count(self):
+        """
+        Returns the number of likes and dislikes on the comment.
+        """
         reactions = (
             Reaction.objects
             .filter(comment=self)
@@ -74,6 +86,10 @@ class Comment(models.Model):
 
 
 class Reaction(models.Model):
+    """
+    Model to represent a reaction to a blog post or comment.
+    """
+    # two types of reactions: like and dislike
     REACTION_CHOICES = (
         ('like', 'like'),
         ('dislike', 'dislike'),

@@ -5,6 +5,10 @@ from blog.models import Post, Comment, Reaction
 
 
 class PostModelTestCase(TestCase):
+    """
+    This testcase tests the Post model.
+    """
+
     def setUp(self):
         # Create test data
         self.user = User.objects.create(username='testuser')
@@ -19,7 +23,7 @@ class PostModelTestCase(TestCase):
         comments = self.post.get_comments()
 
         # Assert that both comments are retrieved
-        self.assertEqual(comments.count(), 2)
+        self.assertEqual(len(comments), 2)
         self.assertIn(comment1, comments)
         self.assertIn(comment2, comments)
 

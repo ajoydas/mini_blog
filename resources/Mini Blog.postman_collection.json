@@ -1,0 +1,734 @@
+{
+	"info": {
+		"_postman_id": "053c6465-a6b9-46d3-9b90-1313125fe127",
+		"name": "Mini Blog",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1556951"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user1\",\n    \"email\": \"user1@mini.blog\",\n    \"first_name\": \"User\",\n    \"last_name\": \"One\",\n    \"password\": \"password1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BLOG_URL}}/api/auth/register",
+							"host": [
+								"{{BLOG_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var res = pm.response.json();",
+									"if(pm.response.code == 200){",
+									"    pm.collectionVariables.set('TOKEN_ACCESS', res.access);",
+									"    pm.collectionVariables.set('TOKEN_REFRESH', res.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user1\",\n    \"password\": \"password1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BLOG_URL}}/api/auth/login",
+							"host": [
+								"{{BLOG_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Superuser)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var res = pm.response.json();",
+									"if(pm.response.code == 200){",
+									"    pm.collectionVariables.set('TOKEN_ACCESS', res.access);",
+									"    pm.collectionVariables.set('TOKEN_REFRESH', res.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"super\",\n    \"password\": \"superpass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BLOG_URL}}/api/auth/login",
+							"host": [
+								"{{BLOG_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var res = pm.response.json();",
+									"if(pm.response.code == 200){",
+									"    pm.collectionVariables.set('TOKEN_ACCESS', res.access);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{TOKEN_REFRESH}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BLOG_URL}}/api/auth/token/refresh",
+							"host": [
+								"{{BLOG_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"token",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BLOG_URL}}/api/auth/profile/user1",
+							"host": [
+								"{{BLOG_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile",
+								"user1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"Admin\",\n    \"bio\": \"I like to eat.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BLOG_URL}}/api/auth/profile/user1",
+							"host": [
+								"{{BLOG_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile",
+								"user1"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{TOKEN_ACCESS}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Blog",
+			"item": [
+				{
+					"name": "Post",
+					"item": [
+						{
+							"name": "List Posts",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Post",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Post",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Post2 title\",\n    \"body\": \"Post body\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Post",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"New Title\",\n    \"body\": \"New body\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts/2",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Post",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts/2",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Post Comments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts/2/comments",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts",
+										"2",
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Post Comment",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"post_id\": 2,\n    \"body\": \"Comment body\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Post Reaction Counts",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts/2/reactions",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts",
+										"2",
+										"reactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Post Reaction",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts/2/reactions/like",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts",
+										"2",
+										"reactions",
+										"like"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Post Reaction",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/posts/2/reactions/like",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"posts",
+										"2",
+										"reactions",
+										"like"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Comment",
+					"item": [
+						{
+							"name": "Get Comment",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments/1",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Comment Reply",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"comment_id\": 1,\n    \"body\": \"Comment body\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Comment",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments/2",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Comment Replies",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments/1/replies",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments",
+										"1",
+										"replies"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Comment Reaction Counts",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments/1/reactions",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments",
+										"1",
+										"reactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Comment Reaction",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments/1/reactions/like",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments",
+										"1",
+										"reactions",
+										"like"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Comment Reaction",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BLOG_URL}}/api/comments/1/reactions/like",
+									"host": [
+										"{{BLOG_URL}}"
+									],
+									"path": [
+										"api",
+										"comments",
+										"1",
+										"reactions",
+										"like"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{TOKEN_ACCESS}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BLOG_URL",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "TOKEN_ACCESS",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "TOKEN_REFRESH",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

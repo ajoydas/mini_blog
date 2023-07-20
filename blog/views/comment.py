@@ -1,31 +1,27 @@
 from django.shortcuts import get_object_or_404
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
 from blog.models import Comment, Post
-from blog.serializers import CommentSerializer
-
-
-# class CommentViewSet(viewsets.ModelViewSet):
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentSerializer
-#
-#     def get_permissions(self):
-#         if self.action in ['view']:
-#             return [permissions.AllowAny]
-#         if self.action in ['create']:
-#             return [permissions.IsAuthenticated()]
-#         return []
-
-class IsAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.profile.role == 'Admin'
+from blog.permissions import IsAdmin
+from blog.serializers import CommentSerializer, InputParamSerializer
+from blog.utils import CommentCreationRateThrottle
+from mini_blog.errors import BadRequest
 
 
 class CommentView(APIView):
+    """
+    This class handles the GET, POST and DELETE requests for the Comment model.
+    """
+
+    def get_throttles(self):
+        if self.request.method == 'POST':
+            return [CommentCreationRateThrottle()]
+        else:
+            return [AnonRateThrottle(), UserRateThrottle()]
+
     def get_permissions(self):
         if self.request.method == 'GET':
             return [permissions.AllowAny()]
@@ -36,35 +32,64 @@ class CommentView(APIView):
         return []
 
     def get(self, request, comment_id):
-        comment = get_object_or_404(Comment, post_id=comment_id)
+        """
+        Comment retrieval API.
+
+        This method retrieves a specific comment.
+        Paramers:
+            request (Request): Request object
+            comment_id (int): Comment id
+        Returns:
+            Response: Specific comment
+        """
+        comment = get_object_or_404(Comment, pk=comment_id)
         serializer = CommentSerializer(comment)
         return Response(serializer.data)
 
     def post(self, request):
-        data = request.data.copy()
-        parent_id = data.pop('parent_id', None)
-        post_id = data.pop('post_id', None)
+        """
+        Comment creation API.
 
-        if parent_id:
-            parent_comment = get_object_or_404(Comment, pk=parent_id[0])
+        This method creates a new comment.
+        Parameters:
+            request (Request): Request object containing comment data.
+        Returns:
+            Response: Newly created comment
+        """
+        data = request.data.copy()
+        comment_id = data.pop('comment_id', None)
+        post_id = data.pop('post_id', None)
+        input_request = InputParamSerializer(data={'comment_id': comment_id,
+                                                   'post_id': post_id})
+        input_request.is_valid(raise_exception=True)
+
+        if comment_id:
+            parent_comment = get_object_or_404(Comment, pk=input_request.data['comment_id'])
             data['parent'] = parent_comment.comment_id
             data['post'] = parent_comment.post_id
-        elif post_id:
-            post = get_object_or_404(Post, pk=post_id[0])
-            data['post'] = post.post_id
         else:
-            return Response({'error': 'Either parent_id or post_id must be provided.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            post = get_object_or_404(Post, pk=input_request.data['post_id'])
+            data['post'] = post.post_id
 
         data['owner'] = request.user.id
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
             comment = serializer.save()
             return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
-        # print(serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        raise BadRequest(serializer.errors)
 
     def delete(self, request, comment_id):
+        """
+        Comment deletion API.
+
+        This method deletes a specific comment.
+        Parameters:
+            request (Request): Request object
+            comment_id (int): Comment id
+        Returns:
+            Response: 204 after successful deletion
+        """
         comment = get_object_or_404(Comment, comment_id=comment_id)
         # self.check_object_permissions(request, comment)
         comment.delete()
@@ -72,47 +97,32 @@ class CommentView(APIView):
 
 
 class CommentListView(APIView):
+    """
+    This class handles the Comment List Retrieval API.
+    """
+
     permission_classes = [permissions.AllowAny]
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                'comment_id',
-                openapi.IN_QUERY,
-                description='Comment ID. Retrieve comments for a specific comment ID.',
-                type=openapi.TYPE_INTEGER,
-                required=False
-            ),
-            openapi.Parameter(
-                'post_id',
-                openapi.IN_QUERY,
-                description='Post ID. Retrieve comments for a specific post ID.',
-                type=openapi.TYPE_INTEGER,
-                required=False
-            )
-        ],
-        responses={
-            status.HTTP_200_OK: CommentSerializer(many=True),
-            status.HTTP_400_BAD_REQUEST: 'Bad Request',
-            status.HTTP_404_NOT_FOUND: 'Not Found'
-        }
-    )
     def get(self, request, comment_id=None, post_id=None):
         """
-        Get comments based on comment ID or post ID.
+        Comment/Reply list retrieval API.
 
+        Get comments/replies based on comment ID or post ID.
         Parameters:
-        - comment_id: Comment ID (optional)
-        - post_id: Post ID (optional)
+            request (Request): Request object
+            comment_id (int): Comment id
+            post_id (int): Post id
+        Returns:
+            Response: List of post comments or comment replies
         """
+        InputParamSerializer(data={'comment_id': comment_id, 'post_id': post_id}) \
+            .is_valid(raise_exception=True)
+
         if comment_id:
             comment = get_object_or_404(Comment, pk=comment_id)
             serializer = CommentSerializer(comment.get_replies(), many=True)
             return Response(serializer.data)
-        if post_id:
+        else:
             post = get_object_or_404(Post, pk=post_id)
             serializer = CommentSerializer(post.get_comments(), many=True)
             return Response(serializer.data)
-
-        return Response({'error': 'Either parent_id or post_id must be provided.'},
-                        status=status.HTTP_400_BAD_REQUEST)

@@ -5,6 +5,10 @@ from blog.models import Post, Comment, Reaction
 
 
 class ReactionModelTestCase(TestCase):
+    """
+    This testcase tests the Reaction model.
+    """
+
     def setUp(self):
         # Create test data
         self.user = User.objects.create(username='testuser')

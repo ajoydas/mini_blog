@@ -4,8 +4,15 @@ from rest_framework.views import exception_handler
 
 
 def custom_exception_handler(exc, context):
+    """
+    This function is used as a custom exception handler for the entire project.
+    """
     if isinstance(exc, APIException):
-        data = {'error': exc.default_detail}
+        if exc.detail:
+            data = {'error': exc.detail}
+        else:
+            data = {'error': exc.default_detail}
+
         return Response(data, status=exc.status_code)
 
     # Fallback to default exception handler for other exceptions
