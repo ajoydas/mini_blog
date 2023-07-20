@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--w)h#=2nph_xu_&*qgk3ssog(w#g79fqno@4xd_dcw*#hvr^cj'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -52,8 +52,7 @@ ROOT_URLCONF = 'mini_blog.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,7 +77,7 @@ WSGI_APPLICATION = 'mini_blog.wsgi.application'
 #     }
 # }
 
-if config('ENVIRONMENT') == 'production':
+if config('ENVIRONMENT') == 'PROD':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -150,6 +149,7 @@ REST_FRAMEWORK = {
         'anon': '2/min',
         'user': '5/min',
     },
+    # 'EXCEPTION_HANDLER': 'mini_blog.utils.custom_exception_handler',
 }
 
 # SIMPLE_JWT configurations

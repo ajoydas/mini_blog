@@ -46,7 +46,6 @@ class CommentView(APIView):
         return Response({'error': 'Either parent_id or post_id must be provided.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
-
     def post(self, request, comment_id=None, post_id=None):
         data = request.data.copy()
 

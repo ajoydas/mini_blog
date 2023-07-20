@@ -34,7 +34,6 @@ class Post(models.Model):
             'like': 0,
             'dislike': 0,
         }
-
         for reaction in reactions:
             reaction_count[reaction['reaction_type']] = reaction['count']
 
@@ -58,7 +57,20 @@ class Comment(models.Model):
         return Comment.objects.filter(parent=self)
 
     def get_reaction_count(self):
-        pass
+        reactions = (
+            Reaction.objects
+            .filter(comment=self)
+            .values('reaction_type')
+            .annotate(count=Count('reaction_type'))
+        )
+        reaction_count = {
+            'like': 0,
+            'dislike': 0,
+        }
+        for reaction in reactions:
+            reaction_count[reaction['reaction_type']] = reaction['count']
+
+        return reaction_count
 
 
 class Reaction(models.Model):

@@ -46,21 +46,22 @@ class CommentView(APIView):
         post_id = data.pop('post_id', None)
 
         if parent_id:
-            parent_comment = get_object_or_404(Comment, pk=parent_id)
-            data['parent'] = parent_comment
+            parent_comment = get_object_or_404(Comment, pk=parent_id[0])
+            data['parent'] = parent_comment.comment_id
+            data['post'] = parent_comment.post_id
         elif post_id:
-            post = get_object_or_404(Post, pk=post_id)
-            data['post'] = post
+            post = get_object_or_404(Post, pk=post_id[0])
+            data['post'] = post.post_id
         else:
             return Response({'error': 'Either parent_id or post_id must be provided.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         data['owner'] = request.user.id
-
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
             comment = serializer.save()
             return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
+        # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, comment_id):
@@ -105,8 +106,8 @@ class CommentListView(APIView):
         - post_id: Post ID (optional)
         """
         if comment_id:
-            comment = get_object_or_404(Comment, post_id=comment_id)
-            serializer = CommentSerializer(comment)
+            comment = get_object_or_404(Comment, pk=comment_id)
+            serializer = CommentSerializer(comment.get_replies(), many=True)
             return Response(serializer.data)
         if post_id:
             post = get_object_or_404(Post, pk=post_id)

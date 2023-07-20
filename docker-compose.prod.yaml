@@ -3,24 +3,39 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile.prod
+      dockerfile: prod.Dockerfile
     ports:
       - '8000:8000'
     environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=PROD
+      - POSTGRES_HOST=db
     env_file:
       - .env
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             (python manage.py createsuperuser --noinput || true) &&
+             gunicorn --bind 0.0.0.0:8000 mini_blog.wsgi:application"
     depends_on:
+      db:
+        condition: service_healthy
+    links:
       - db
+
   db:
     image: postgres:latest
-    environment:
-      - POSTGRES_DB=mydatabase
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypassword
+    user: postgres
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:

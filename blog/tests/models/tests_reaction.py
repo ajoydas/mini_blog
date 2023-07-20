@@ -22,7 +22,7 @@ class ReactionModelTestCase(TestCase):
 
     def test_unique_reaction_with_post(self):
         # Create a reaction with a post, user, and reaction_type
-        reaction = Reaction.objects.create(post=self.post, user=self.user, reaction_type='like')
+        _ = Reaction.objects.create(post=self.post, user=self.user, reaction_type='like')
 
         # Try to create another reaction with the same post, user, and reaction_type
         with self.assertRaises(Exception):
@@ -30,7 +30,7 @@ class ReactionModelTestCase(TestCase):
 
     def test_unique_reaction_with_comment(self):
         # Create a reaction with a comment, user, and reaction_type
-        reaction = Reaction.objects.create(comment=self.comment, user=self.user, reaction_type='dislike')
+        _ = Reaction.objects.create(comment=self.comment, user=self.user, reaction_type='dislike')
 
         # Try to create another reaction with the same comment, user, and reaction_type
         with self.assertRaises(Exception):

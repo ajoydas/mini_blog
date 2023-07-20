@@ -1,0 +1,14 @@
+# .flake8
+
+[flake8]
+# Ignore specific directories or files
+exclude = .git,__pycache__,venv,migrations
+
+# Set the maximum line length
+max-line-length = 120
+
+# Enable specific checks or plugins
+plugins = mccabe
+
+# Specify additional rules or settings
+ignore = E501

@@ -25,8 +25,8 @@ class PostModelTestCase(TestCase):
 
     def test_get_reaction_count(self):
         # Create reactions associated with the post
-        reaction1 = Reaction.objects.create(post=self.post, user=self.user, reaction_type='like')
-        reaction2 = Reaction.objects.create(post=self.post, user=self.user, reaction_type='dislike')
+        _ = Reaction.objects.create(post=self.post, user=self.user, reaction_type='like')
+        _ = Reaction.objects.create(post=self.post, user=self.user, reaction_type='dislike')
 
         # Call get_reaction_count() on the post instance
         reaction_count = self.post.get_reaction_count()

@@ -56,7 +56,6 @@ class PostViewTestCase(APITestCase):
         data = {'title': 'New Post', 'body': 'New Body'}
         self.client.force_authenticate(user=self.user)
         response = self.client.post(url, data)
-        print(response.status_code)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_post_by_owner(self):
